@@ -1,0 +1,44 @@
+name: Build Web
+
+on:
+  workflow_dispatch:
+
+env:
+  flutter_version: "2.10.5"
+
+jobs:
+  build_web:
+    runs-on: self-hosted
+    steps:
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v2
+        with:
+          path: /Users/runner/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+      - name: Clone Flutter repository with stable channel
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: ${{ env.flutter_version }}
+      - run: flutter doctor -v
+      
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          
+      - run: flutter clean
+      - run: flutter config --enable-web
+      - run: flutter pub get
+      - run: flutter build web --release --base-href="/responsive_scaffold/"
+      
+      - run: |
+          cd build/web
+          git init
+          git config --global user.email srcchang@gmail.com
+          git config --global user.name srcchang
+          git status
+          git remote add origin https://${{secrets.GIT_PERSONAL_ACCESS_TOKEN}}@github.com/srcchang/responsive_scaffold.git
+          git checkout -b gh-pages
+          git add --all
+          git commit -m "update"
+          git push origin gh-pages -f
