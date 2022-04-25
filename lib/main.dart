@@ -1,20 +1,41 @@
 import 'package:flutter/material.dart';
 
-import 'src/app.dart';
-import 'src/settings/settings_controller.dart';
-import 'src/settings/settings_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:responsivescaffold/ui/main_page.dart';
+import 'package:responsivescaffold/widget/responsive_scaffold.dart';
 
 void main() async {
-  // Set up the SettingsController, which will glue user settings to multiple
-  // Flutter Widgets.
-  final settingsController = SettingsController(SettingsService());
+  Responsive.initialize(
+      options: const ResponsiveOptions(
+    desktopBreakpoint: 1024,
+    tabletBreakpoint: 600,
+    drawerWidth: 320,
+  ));
+  runApp(const App());
+}
 
-  // Load the user's preferred theme while the splash screen is displayed.
-  // This prevents a sudden theme change when the app is first displayed.
-  await settingsController.loadSettings();
+class App extends StatelessWidget {
+  const App({Key? key}) : super(key: key);
 
-  // Run the app and pass in the SettingsController. The app listens to the
-  // SettingsController for changes, then passes it further down to the
-  // SettingsView.
-  runApp(MyApp(settingsController: settingsController));
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      theme: ThemeData(),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.system,
+      onGenerateRoute: (RouteSettings routeSettings) {
+        return MaterialPageRoute<void>(
+          settings: routeSettings,
+          builder: (BuildContext context) {
+            switch (routeSettings.name) {
+              default:
+                return MainPage();
+            }
+          },
+        );
+      },
+    );
+  }
 }
